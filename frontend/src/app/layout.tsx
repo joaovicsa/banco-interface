@@ -45,9 +45,6 @@ export default function RootLayout({
 }): JSX.Element {
   return (
     <>
-      <Head>
-        <link rel="icon" href="/public/favicon.ico" />
-      </Head>
       <html lang="pt" suppressHydrationWarning>
         <body className={inter.className}>
           <Providers>

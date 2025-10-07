@@ -1,6 +1,6 @@
 
 import Auth from "@/pages/Auth";
-import Dashboard from "@/pages/Dashboard";
+
 
 
 const App = () => (
