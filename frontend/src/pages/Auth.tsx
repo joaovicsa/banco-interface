@@ -1,3 +1,4 @@
+'use client';
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -5,12 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
 import { Wallet } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const Auth = () => {
     const router = useRouter();
+    const [errorMessage, setErrorMessage] = useState("");
     const [loading, setLoading] = useState(false);
     const [loginEmail, setLoginEmail] = useState("");
     const [loginPassword, setLoginPassword] = useState("");
@@ -39,6 +40,7 @@ const Auth = () => {
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+        setErrorMessage("");
 
         const { error } = await supabase.auth.signInWithPassword({
             email: loginEmail,
@@ -46,9 +48,7 @@ const Auth = () => {
         });
 
         if (error) {
-            toast("Erro no Login");
-        } else {
-            toast("Login realizado com sucesso!");
+            setErrorMessage("Erro ao fazer login. Verifique suas credenciais e tente novamente.");
         }
 
         setLoading(false);
@@ -57,6 +57,7 @@ const Auth = () => {
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+        setErrorMessage("");
 
         const { error } = await supabase.auth.signUp({
             email: signupEmail,
@@ -70,9 +71,7 @@ const Auth = () => {
         });
 
         if (error) {
-            toast("Erro no cadastro");
-        } else {
-            toast("Cadastro realizado com sucesso!");
+            setErrorMessage("Erro ao criar conta. Tente novamente mais tarde.");
         }
 
         setLoading(false);
@@ -122,6 +121,7 @@ const Auth = () => {
                                 <Button type="submit" className="w-full" disabled={loading}>
                                     {loading ? "Entrando..." : "Entrar"}
                                 </Button>
+                                {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
                             </form>
                         </TabsContent>
 
@@ -164,6 +164,7 @@ const Auth = () => {
                                 <Button type="submit" className="w-full" disabled={loading}>
                                     {loading ? "Cadastrando..." : "Criar Conta"}
                                 </Button>
+                                {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
                             </form>
                         </TabsContent>
                     </Tabs>
