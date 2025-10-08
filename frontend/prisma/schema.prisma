@@ -8,7 +8,7 @@ datasource db {
 }
 
 model profiles {
-  id           String         @id @db.VarChar
+  id           Int            @id
   created_at   DateTime       @default(now()) @db.Timestamptz(6)
   email        String         @unique @db.VarChar
   password     String          @db.VarChar
@@ -25,9 +25,9 @@ model transactions {
   amount             BigInt?
   balance_after      BigInt?
   description        String?           @db.VarChar
-  related_user_id    String?           @default("")
+  related_user_id    Int?
   reversed           Boolean           @default(false)
-  user_id            String            @default("")
+  user_id            Int
   reversal_of        BigInt?
   type               transaction_type?
   related            profiles?         @relation("RelatedTransactions", fields: [related_user_id], references: [id], onDelete: SetDefault, onUpdate: Restrict)
