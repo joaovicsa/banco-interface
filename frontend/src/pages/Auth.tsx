@@ -31,7 +31,7 @@ const Auth = () => {
 
         const data = await res.json();
         if (!res.ok) setErrorMessage(data.error || "Erro ao fazer login.");
-        else router.push("/dashboard");
+        else router.push("/Dashboard");
 
         setLoading(false);
     };
@@ -53,7 +53,7 @@ const Auth = () => {
 
         const data = await res.json();
         if (!res.ok) setErrorMessage(data.error || "Erro ao criar conta.");
-        else router.push("/dashboard");
+        else router.push("/Dashboard");
 
         setLoading(false);
     };
