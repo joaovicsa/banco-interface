@@ -1,55 +1,37 @@
 'use client';
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Wallet } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 const Auth = () => {
     const router = useRouter();
-    const [errorMessage, setErrorMessage] = useState("");
     const [loading, setLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
     const [loginEmail, setLoginEmail] = useState("");
     const [loginPassword, setLoginPassword] = useState("");
     const [signupEmail, setSignupEmail] = useState("");
     const [signupPassword, setSignupPassword] = useState("");
     const [signupFullName, setSignupFullName] = useState("");
 
-    useEffect(() => {
-        const checkUser = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                router.push("/dashboard");
-            }
-        };
-        checkUser();
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (session) {
-                router.push("/dashboard");
-            }
-        });
-
-        return () => subscription.unsubscribe();
-    }, [router]);
-
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setErrorMessage("");
 
-        const { error } = await supabase.auth.signInWithPassword({
-            email: loginEmail,
-            password: loginPassword,
+        const res = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: loginEmail, password: loginPassword }),
         });
 
-        if (error) {
-            setErrorMessage("Erro ao fazer login. Verifique suas credenciais e tente novamente.");
-        }
+        const data = await res.json();
+        if (!res.ok) setErrorMessage(data.error || "Erro ao fazer login.");
+        else router.push("/dashboard");
 
         setLoading(false);
     };
@@ -59,20 +41,19 @@ const Auth = () => {
         setLoading(true);
         setErrorMessage("");
 
-        const { error } = await supabase.auth.signUp({
-            email: signupEmail,
-            password: signupPassword,
-            options: {
-                data: {
-                    full_name: signupFullName,
-                },
-                emailRedirectTo: `${window.location.origin}/`,
-            },
+        const res = await fetch("/api/auth/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                email: signupEmail,
+                password: signupPassword,
+                name: signupFullName,
+            }),
         });
 
-        if (error) {
-            setErrorMessage("Erro ao criar conta. Tente novamente mais tarde.");
-        }
+        const data = await res.json();
+        if (!res.ok) setErrorMessage(data.error || "Erro ao criar conta.");
+        else router.push("/dashboard");
 
         setLoading(false);
     };
@@ -96,23 +77,19 @@ const Auth = () => {
 
                         <TabsContent value="login">
                             <form onSubmit={handleLogin} className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="login-email">Email</Label>
+                                <div>
+                                    <Label>Email</Label>
                                     <Input
-                                        id="login-email"
                                         type="email"
-                                        placeholder="seu@email.com"
                                         value={loginEmail}
                                         onChange={(e) => setLoginEmail(e.target.value)}
                                         required
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="login-password">Senha</Label>
+                                <div>
+                                    <Label>Senha</Label>
                                     <Input
-                                        id="login-password"
                                         type="password"
-                                        placeholder="••••••••"
                                         value={loginPassword}
                                         onChange={(e) => setLoginPassword(e.target.value)}
                                         required
@@ -127,34 +104,28 @@ const Auth = () => {
 
                         <TabsContent value="signup">
                             <form onSubmit={handleSignup} className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="signup-name">Nome Completo</Label>
+                                <div>
+                                    <Label>Nome Completo</Label>
                                     <Input
-                                        id="signup-name"
                                         type="text"
-                                        placeholder="Seu Nome"
                                         value={signupFullName}
                                         onChange={(e) => setSignupFullName(e.target.value)}
                                         required
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="signup-email">Email</Label>
+                                <div>
+                                    <Label>Email</Label>
                                     <Input
-                                        id="signup-email"
                                         type="email"
-                                        placeholder="seu@email.com"
                                         value={signupEmail}
                                         onChange={(e) => setSignupEmail(e.target.value)}
                                         required
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="signup-password">Senha</Label>
+                                <div>
+                                    <Label>Senha</Label>
                                     <Input
-                                        id="signup-password"
                                         type="password"
-                                        placeholder="••••••••"
                                         value={signupPassword}
                                         onChange={(e) => setSignupPassword(e.target.value)}
                                         required
