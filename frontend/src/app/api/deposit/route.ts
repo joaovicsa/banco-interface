@@ -14,13 +14,6 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
         }
 
-        // Verifica se o valor do depósito é maior que o saldo atual
-        if (amount > user.balance) {
-            return NextResponse.json({
-                error: "O valor do depósito não pode ser maior que o saldo atual.",
-            }, { status: 400 });
-        }
-
         const newBalance = user.balance + amount;
 
         await prisma.profiles.update({
