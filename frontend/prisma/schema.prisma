@@ -14,6 +14,7 @@ model profiles {
   password     String          @db.VarChar
   name         String?        @db.VarChar
   updated_at   DateTime?      @db.Timestamptz(6)
+  balance      Int            @default(0) // poderia ser BigInt
   related      transactions[] @relation("RelatedTransactions")
   transactions transactions[] @relation("UserTransactions")
 }
