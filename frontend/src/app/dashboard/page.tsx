@@ -23,7 +23,6 @@ export default function Dashboard() {
     const router = useRouter();
     const [user, setUser] = useState<User | null>(null);
     const [transactions, setTransactions] = useState<z.infer<typeof TransactionSchema>[]>([]);
-    const [loading, setLoading] = useState(true);
     const [depositOpen, setDepositOpen] = useState(false);
     const [transferOpen, setTransferOpen] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
