@@ -1,10 +1,13 @@
-
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+    req: Request,
+    context: { params: Promise<{ id: string }> }
+) {
     try {
-        const userId = params.id;
+        const { id } = await context.params; // ✅ await params
+        const userId = id;
 
         const transactions = await prisma.transactions.findMany({
             where: { user_id: userId },

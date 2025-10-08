@@ -5,7 +5,6 @@ export async function POST(req: NextRequest) {
     try {
         const { userId, userEmail, recipientEmail, amount } = await req.json();
 
-        // Validação básica
         if (
             typeof userId !== "string" ||
             typeof userEmail !== "string" ||

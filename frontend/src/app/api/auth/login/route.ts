@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 
-const JWT_SECRET = process.env.JWT_SECRET!; // add this to your .env
+const JWT_SECRET = process.env.JWT_SECRET!; 
 
 export async function POST(req: Request) {
     try {
@@ -23,7 +23,13 @@ export async function POST(req: Request) {
 
         const token = jwt.sign({ id: profile.id, email: profile.email }, JWT_SECRET, { expiresIn: "7d" });
 
-        const res = NextResponse.json({ message: "Login successful" });
+        const res = NextResponse.json({
+            message: "Login successful",
+            id: profile.id,
+            name: profile.name,
+            email: profile.email,
+        });
+
         res.cookies.set("auth-token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
