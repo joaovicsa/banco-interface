@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
-interface DepositDialogProps {
+type DepositDialogProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     userId: string;
@@ -22,42 +21,27 @@ const DepositDialog = ({ open, onOpenChange, userId, currentBalance, onSuccess }
         const depositAmount = parseFloat(amount);
 
         if (isNaN(depositAmount) || depositAmount <= 0) {
-            toast("Valor inválido \n Por favor, insira um valor válido para depositar.")
+            toast("Valor inválido \n Por favor, insira um valor válido para depositar.");
             return;
         }
 
         setLoading(true);
 
-        let adjustedBalance = currentBalance;
-        if (currentBalance < 0) {
-            adjustedBalance = depositAmount + currentBalance;
-        } else {
-            adjustedBalance = currentBalance + depositAmount;
-        }
+        const res = await fetch("/api/deposit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId, amount: depositAmount }),
+        });
 
-        const { error: updateError } = await supabase
-            .from("profiles")
-            .update({ balance: adjustedBalance })
-            .eq("id", userId);
+        const data = await res.json();
 
-        if (updateError) {
-            toast("Erro ao realizar depósito",);
-            setLoading(false);
+        if (depositAmount > currentBalance) {
+            toast("O valor do depósito não pode ser maior que o saldo atual.");
             return;
         }
 
-        const { error: transactionError } = await supabase
-            .from("transactions")
-            .insert({
-                user_id: userId,
-                type: "deposit",
-                amount: depositAmount,
-                balance_after: adjustedBalance,
-                description: "Depósito realizado",
-            });
-
-        if (transactionError) {
-            toast("Erro ao registrar transação",);
+        if (!res.ok) {
+            toast(data.error || "Erro ao realizar depósito");
         } else {
             toast(`Depósito realizado com sucesso!\nR$ ${depositAmount.toFixed(2)} foi adicionado à sua conta.`);
             setAmount("");
