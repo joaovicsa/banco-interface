@@ -11,10 +11,30 @@ export async function GET(
 
         const user = await prisma.profiles.findUnique({
             where: { id: userId },
-            include: {
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                balance: true,
                 transactions: {
                     orderBy: { created_at: "desc" },
                     take: 50,
+                    select: {
+                        id: true,
+                        amount: true,
+                        balance_after: true,
+                        description: true,
+                        type: true,
+                        created_at: true,
+                        reversed: true,
+                        related: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true,
+                            },
+                        },
+                    },
                 },
             },
         });

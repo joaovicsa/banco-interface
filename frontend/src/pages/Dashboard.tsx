@@ -21,13 +21,26 @@ type User = {
 
 export default function Dashboard() {
     const router = useRouter();
-    const userId = "1"; // temporary placeholder — replace with real user session ID later
-
     const [user, setUser] = useState<User | null>(null);
     const [transactions, setTransactions] = useState<z.infer<typeof TransactionSchema>[]>([]);
     const [depositOpen, setDepositOpen] = useState(false);
     const [transferOpen, setTransferOpen] = useState(false);
+    const [userId, setUserId] = useState<string | null>(null);
 
+    useEffect(() => {
+        const storedId = localStorage.getItem("userId");
+        if (storedId) {
+            setUserId(storedId);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (userId) {
+            fetchUser();
+        }
+    }, [userId]);
+
+    console.log("User ID:", userId); // Adicione este log para verificar o valor de userId
     const fetchUser = async () => {
         const res = await fetch(`/api/user/${userId}`);
         const data = await res.json();
@@ -88,7 +101,7 @@ export default function Dashboard() {
                             <div>
                                 <CardDescription>Saldo Disponível</CardDescription>
                                 <CardTitle className="text-4xl font-bold mt-2">
-                                    R$ {user.balance.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    R$ {user?.balance?.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? "0,00"}
                                 </CardTitle>
                             </div>
                             <Button variant="ghost" size="icon" onClick={handleRefresh}>

@@ -19,11 +19,20 @@ export async function POST(req: Request) {
 
         const hashed = await bcrypt.hash(password, 10);
 
-        await prisma.profiles.create({
-            data: { id: crypto.randomUUID(), email, name, password: hashed },
+        // Exemplo no signup handler
+        const newUser = await prisma.profiles.create({
+            data: {
+                id: crypto.randomUUID(),
+                email,
+                password: hashed,
+                name,
+                balance: 0,
+            },
         });
 
-        return NextResponse.json({ message: "Account created successfully" }, { status: 201 });
+        return NextResponse.json({ message: "Account created successfully", id: newUser.id }, { status: 201 });
+
+        // return NextResponse.json({ message: "Account created successfully" }, { status: 201 });
     } catch (err) {
         console.error(err);
         return NextResponse.json({ error: "Server error" }, { status: 500 });
