@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +6,7 @@ import { toast } from "sonner";
 import { ArrowDownToLine, ArrowUpRight, Undo2, User } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
-interface Transaction {
+type Transaction = {
     id: string;
     type: string;
     amount: number;
@@ -31,125 +30,53 @@ const TransactionHistory = ({ userId, onRefresh }: TransactionHistoryProps) => {
 
     useEffect(() => {
         fetchTransactions();
-
-        const channel = supabase
-            .channel('transactions-changes')
-            .on(
-                'postgres_changes',
-                {
-                    event: '*',
-                    schema: 'public',
-                    table: 'transactions',
-                    filter: `user_id=eq.${userId}`
-                },
-                () => {
-                    fetchTransactions();
-                }
-            )
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
     }, [userId]);
 
     const fetchTransactions = async () => {
         setLoading(true);
-        const { data, error } = await supabase
-            .from("transactions")
-            .select("*")
-            .eq("user_id", userId)
-            .order("created_at", { ascending: false })
-            .limit(50);
+        const res = await fetch(`/api/transactions/${userId}`);
+        const data = await res.json();
 
-        if (error) {
+        if (!res.ok) {
             toast("Erro ao carregar transações");
         } else {
-            setTransactions(data || []);
-
-            const userIds = [...new Set(data?.map(t => t.related_user_id).filter(Boolean) as string[])];
-            if (userIds.length > 0) {
-                const { data: profiles } = await supabase
-                    .from("profiles")
-                    .select("id, full_name")
-                    .in("id", userIds);
-
-                if (profiles) {
-                    const usersMap: Record<string, string> = {};
-                    profiles.forEach(p => {
-                        usersMap[p.id] = p.full_name;
-                    });
-                    setRelatedUsers(usersMap);
-                }
-            }
+            setTransactions(data.transactions || []);
+            setRelatedUsers(data.relatedUsers || {});
         }
+
         setLoading(false);
     };
 
-    const handleReverseTransaction = async (transactionId: string, originalAmount: number, transactionType: string) => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        const { data: profile, error: profileError } = await supabase
-            .from("profiles")
-            .select("balance")
-            .eq("id", user.id)
-            .single();
-
-        if (profileError || !profile) {
-            toast("Erro");
-            return;
-        }
-
-        let newBalance = profile.balance;
-
-        if (transactionType === "deposit") {
-            newBalance -= originalAmount;
-        } else if (transactionType === "transfer_sent") {
-            newBalance += originalAmount;
-        } else if (transactionType === "transfer_received") {
-            newBalance -= originalAmount;
-        }
-
-        const { error: updateError } = await supabase
-            .from("profiles")
-            .update({ balance: newBalance })
-            .eq("id", user.id);
-
-        if (updateError) {
-            toast("Erro ao reverter transação");
-            return;
-        }
-
-        const { error: reversalInsertError } = await supabase
-            .from("transactions")
-            .insert({
-                user_id: user.id,
-                type: "reversal",
-                amount: originalAmount,
-                balance_after: newBalance,
-                description: `Reversão de transação`,
-                reversal_of: transactionId,
+    const handleReverseTransaction = async (
+        transactionId: string,
+        originalAmount: number,
+        transactionType: string
+    ) => {
+        try {
+            const res = await fetch("/api/transactions/reverse", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    userId,
+                    transactionId,
+                    originalAmount,
+                    transactionType,
+                }),
             });
 
-        if (reversalInsertError) {
-            toast("Erro ao registrar reversão");
-            return;
+            const data = await res.json();
+
+            if (!res.ok) {
+                toast(data.error || "Erro ao reverter transação");
+                return;
+            }
+
+            toast("Transação revertida com sucesso!");
+            onRefresh();
+        } catch (error) {
+            console.error("Erro ao reverter transação:", error);
+            toast("Erro inesperado ao reverter transação");
         }
-
-        const { error: markReversedError } = await supabase
-            .from("transactions")
-            .update({ reversed: true })
-            .eq("id", transactionId);
-
-        if (markReversedError) {
-            toast("Erro ao marcar transação como revertida");
-            return;
-        }
-
-        toast("Transação revertida com sucesso!");
-
-        onRefresh();
     };
 
     const getTransactionIcon = (type: string) => {
