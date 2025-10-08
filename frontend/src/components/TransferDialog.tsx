@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,72 +39,21 @@ const TransferDialog = ({ open, onOpenChange, userId, currentBalance, userEmail,
 
         setLoading(true);
 
-        const { data: recipient, error: recipientError } = await supabase
-            .from("profiles")
-            .select("id, balance")
-            .eq("email", recipientEmail)
-            .single();
-
-        if (recipientError || !recipient) {
-            toast("Destinatário não encontrado \nNão foi possível encontrar um usuário com este email.");
-            setLoading(false);
-            return;
-        }
-
-        const newSenderBalance = currentBalance - transferAmount;
-        const newRecipientBalance = recipient.balance + transferAmount;
-
-        const { error: senderUpdateError } = await supabase
-            .from("profiles")
-            .update({ balance: newSenderBalance })
-            .eq("id", userId);
-
-        if (senderUpdateError) {
-            toast("Erro ao realizar transferência");
-            setLoading(false);
-            return;
-        }
-
-        const { error: recipientUpdateError } = await supabase
-            .from("profiles")
-            .update({ balance: newRecipientBalance })
-            .eq("id", recipient.id);
-
-        if (recipientUpdateError) {
-            await supabase
-                .from("profiles")
-                .update({ balance: currentBalance })
-                .eq("id", userId);
-
-            toast("Erro ao realizar transferência");
-            setLoading(false);
-            return;
-        }
-
-        const { error: senderTransactionError } = await supabase
-            .from("transactions")
-            .insert({
-                user_id: userId,
-                type: "transfer_sent",
+        const res = await fetch("/api/transfer", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                userId,
+                userEmail,
+                recipientEmail,
                 amount: transferAmount,
-                balance_after: newSenderBalance,
-                related_user_id: recipient.id,
-                description: `Transferência para ${recipientEmail}`,
-            });
+            }),
+        });
 
-        const { error: recipientTransactionError } = await supabase
-            .from("transactions")
-            .insert({
-                user_id: recipient.id,
-                type: "transfer_received",
-                amount: transferAmount,
-                balance_after: newRecipientBalance,
-                related_user_id: userId,
-                description: `Transferência recebida de ${userEmail}`,
-            });
+        const data = await res.json();
 
-        if (senderTransactionError || recipientTransactionError) {
-            toast("Erro ao registrar transação \nA transferência foi realizada, mas houve um erro ao registrar.",);
+        if (!res.ok) {
+            toast(data.error || "Erro ao realizar transferência");
         } else {
             toast(`Transferência realizada com sucesso! \nR$ ${transferAmount.toFixed(2)} foi transferido para ${recipientEmail}.`);
             setRecipientEmail("");
