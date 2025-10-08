@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  next-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: banco-interface
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DIRECT_URL}
+    command: sh -c "npx prisma generate && npx prisma db push && npx next start -H 0.0.0.0 -p 3000"
+    expose:
+      - '3000:3000'
+    ports:
+      - '3000:3000'
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
