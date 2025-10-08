@@ -98,7 +98,7 @@ const TransferDialog = ({ open, onOpenChange, userId, currentBalance, userEmail,
                         />
                     </div>
                     <div className="text-sm text-muted-foreground">
-                        Saldo disponível: R$ {currentBalance.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                        Saldo disponível: R$ {(currentBalance ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                     </div>
                 </div>
                 <DialogFooter>

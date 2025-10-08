@@ -40,7 +40,6 @@ export default function Dashboard() {
         }
     }, [userId]);
 
-    console.log("User ID:", userId); // Adicione este log para verificar o valor de userId
     const fetchUser = async () => {
         const res = await fetch(`/api/user/${userId}`);
         const data = await res.json();
@@ -133,14 +132,16 @@ export default function Dashboard() {
                     onSuccess={handleRefresh}
                 />
 
+
                 <TransferDialog
                     open={transferOpen}
                     onOpenChange={setTransferOpen}
-                    userId={user!.id}
-                    currentBalance={user.balance}
+                    userId={user.id}
+                    currentBalance={user.balance ?? 0}
                     userEmail={user.email}
                     onSuccess={handleRefresh}
                 />
+
             </div>
         </div>
     );

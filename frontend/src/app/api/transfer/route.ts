@@ -1,4 +1,3 @@
-// src/pages/api/transfer.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -6,7 +5,14 @@ export async function POST(req: NextRequest) {
     try {
         const { userId, userEmail, recipientEmail, amount } = await req.json();
 
-        if (!userId || !userEmail || !recipientEmail || amount <= 0) {
+        // Validação básica
+        if (
+            typeof userId !== "string" ||
+            typeof userEmail !== "string" ||
+            typeof recipientEmail !== "string" ||
+            typeof amount !== "number" ||
+            amount <= 0
+        ) {
             return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
         }
 
@@ -14,10 +20,17 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Você não pode transferir para si mesmo." }, { status: 400 });
         }
 
-        const sender = await prisma.profiles.findUnique({ where: { id: userId } });
-        const recipient = await prisma.profiles.findUnique({ where: { email: recipientEmail } });
+        // Busca dos perfis
+        const [sender, recipient] = await Promise.all([
+            prisma.profiles.findUnique({ where: { id: userId } }),
+            prisma.profiles.findUnique({ where: { email: recipientEmail } }),
+        ]);
 
-        if (!sender || !recipient) {
+        if (!sender) {
+            return NextResponse.json({ error: "Usuário remetente não encontrado." }, { status: 404 });
+        }
+
+        if (!recipient) {
             return NextResponse.json({ error: "Usuário destinatário não encontrado." }, { status: 404 });
         }
 
@@ -28,9 +41,10 @@ export async function POST(req: NextRequest) {
         const newSenderBalance = sender.balance - amount;
         const newRecipientBalance = recipient.balance + amount;
 
+        // Transação atômica
         await prisma.$transaction([
             prisma.profiles.update({
-                where: { id: userId },
+                where: { id: sender.id },
                 data: { balance: newSenderBalance },
             }),
             prisma.profiles.update({
@@ -39,7 +53,7 @@ export async function POST(req: NextRequest) {
             }),
             prisma.transactions.create({
                 data: {
-                    user_id: userId,
+                    user_id: sender.id,
                     type: "transfer_sent",
                     amount,
                     balance_after: newSenderBalance,
@@ -53,7 +67,7 @@ export async function POST(req: NextRequest) {
                     type: "transfer_received",
                     amount,
                     balance_after: newRecipientBalance,
-                    related_user_id: userId,
+                    related_user_id: sender.id,
                     description: `Transferência recebida de ${userEmail}`,
                 },
             }),
