@@ -48,12 +48,18 @@ const Auth = () => {
                 email: signupEmail,
                 password: signupPassword,
                 name: signupFullName,
+                balance: 0,
             }),
         });
 
         const data = await res.json();
-        if (!res.ok) setErrorMessage(data.error || "Erro ao criar conta.");
-        else router.push("/Dashboard");
+
+        if (!res.ok) {
+            setErrorMessage(data.error || "Erro ao criar conta.");
+        } else {
+            localStorage.setItem("userId", data.id); // salva o ID gerado
+            router.push("/Dashboard");
+        }
 
         setLoading(false);
     };
