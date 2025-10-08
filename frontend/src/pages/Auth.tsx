@@ -30,8 +30,13 @@ const Auth = () => {
         });
 
         const data = await res.json();
-        if (!res.ok) setErrorMessage(data.error || "Erro ao fazer login.");
-        else router.push("/Dashboard");
+
+        if (!res.ok) {
+            setErrorMessage(data.error || "Erro ao fazer login.");
+        } else {
+            localStorage.setItem("userId", data.id); 
+            router.push("/Dashboard");
+        }
 
         setLoading(false);
     };

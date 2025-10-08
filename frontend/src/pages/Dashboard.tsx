@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { TransactionTypeEnum, TransactionSchema } from "@/types";
 import { ArrowDownToLine, ArrowUpRight, LogOut, RefreshCcw, Wallet } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { z } from "zod";
+import { set, z } from "zod";
 import { useEffect, useState } from "react";
 
 type User = {
@@ -23,6 +23,7 @@ export default function Dashboard() {
     const router = useRouter();
     const [user, setUser] = useState<User | null>(null);
     const [transactions, setTransactions] = useState<z.infer<typeof TransactionSchema>[]>([]);
+    const [loading, setLoading] = useState(true);
     const [depositOpen, setDepositOpen] = useState(false);
     const [transferOpen, setTransferOpen] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
@@ -49,10 +50,6 @@ export default function Dashboard() {
         setTransactions(validatedTransactions.success ? validatedTransactions.data : []);
     };
 
-    useEffect(() => {
-        fetchUser();
-    }, []);
-
     const handleRefresh = () => {
         fetchUser();
     };
@@ -68,8 +65,8 @@ export default function Dashboard() {
 
     if (!user) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <p className="text-red-500 text-lg font-semibold">Usuário não encontrado</p>
+            <div className="min-h-screen gradient-subtle flex items-center justify-center">
+                <div className="animate-pulse">Carregando...</div>
             </div>
         );
     }
@@ -132,16 +129,14 @@ export default function Dashboard() {
                     onSuccess={handleRefresh}
                 />
 
-
                 <TransferDialog
                     open={transferOpen}
                     onOpenChange={setTransferOpen}
-                    userId={user.id}
-                    currentBalance={user.balance ?? 0}
+                    userId={user!.id}
+                    currentBalance={user.balance}
                     userEmail={user.email}
                     onSuccess={handleRefresh}
                 />
-
             </div>
         </div>
     );
