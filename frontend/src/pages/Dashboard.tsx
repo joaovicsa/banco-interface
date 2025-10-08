@@ -1,97 +1,68 @@
-'use client';
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+"use client";
+
+import DepositDialog from "@/components/DepositDialog";
+import TransactionHistory from "@/components/TransactionHistory";
+import TransferDialog from "@/components/TransferDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "sonner";
+import { TransactionTypeEnum, TransactionSchema } from "@/types";
 import { ArrowDownToLine, ArrowUpRight, LogOut, RefreshCcw, Wallet } from "lucide-react";
-import type { User } from "@supabase/supabase-js";
-import TransactionHistory from "@/components/TransactionHistory";
-import DepositDialog from "@/components/DepositDialog";
-
 import { useRouter } from "next/navigation";
-import TransferDialog from "@/components/TransferDialog";
+import { z } from "zod";
+import { useEffect, useState } from "react";
 
-
-interface Profile {
+type User = {
     id: string;
-    full_name: string;
+    name: string;
     email: string;
     balance: number;
-}
+    transactions: z.infer<typeof TransactionSchema>[];
+};
 
-const Dashboard = () => {
-    const router = useRouter()
+export default function Dashboard() {
+    const router = useRouter();
+    const userId = "1"; // temporary placeholder — replace with real user session ID later
+
     const [user, setUser] = useState<User | null>(null);
-    const [profile, setProfile] = useState<Profile | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [transactions, setTransactions] = useState<z.infer<typeof TransactionSchema>[]>([]);
     const [depositOpen, setDepositOpen] = useState(false);
     const [transferOpen, setTransferOpen] = useState(false);
 
-    useEffect(() => {
-        checkUser();
+    const fetchUser = async () => {
+        const res = await fetch(`/api/user/${userId}`);
+        const data = await res.json();
+        setUser(data);
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            if (!session) {
-                router.push("/auth");
-            } else {
-                setUser(session.user);
-                setTimeout(() => {
-                    fetchProfile(session.user.id);
-                }, 0);
-            }
-        });
-
-        return () => subscription.unsubscribe();
-    }, [router]);
-
-    const checkUser = async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-            router.push("/auth");
-            return;
-        }
-
-        setUser(session.user);
-        await fetchProfile(session.user.id);
+        const validatedTransactions = z.array(TransactionSchema).safeParse(data.transactions);
+        setTransactions(validatedTransactions.success ? validatedTransactions.data : []);
     };
 
-    const fetchProfile = async (userId: string) => {
-        setLoading(true);
-        const { data, error } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", userId)
-            .single();
+    useEffect(() => {
+        fetchUser();
+    }, []);
 
-        if (error) {
-            toast(
-                "Erro ao carregar perfil"
-            )
-        } else {
-            setProfile(data);
-        }
-        setLoading(false);
+    const handleRefresh = () => {
+        fetchUser();
     };
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
-        router.push("/auth");
-    };
-
-    const handleRefresh = () => {
-        if (user) {
-            fetchProfile(user.id);
+        try {
+            await fetch("/api/auth/logout", { method: "POST" });
+            router.push("/");
+        } catch (err) {
+            console.error("Falha ao deslogar", err);
         }
     };
 
-    if (loading || !profile) {
+    if (!user) {
         return (
-            <div className="min-h-screen gradient-subtle flex items-center justify-center">
-                <div className="animate-pulse">Carregando...</div>
+            <div className="flex items-center justify-center min-h-screen">
+                <p className="text-red-500 text-lg font-semibold">Usuário não encontrado</p>
             </div>
         );
     }
+
+    const totalBalance = transactions.reduce((sum, t) => sum + t.amount, 0);
 
     return (
         <div className="min-h-screen gradient-subtle">
@@ -103,7 +74,7 @@ const Dashboard = () => {
                         </div>
                         <div>
                             <h1 className="text-2xl font-bold">Carteira Digital</h1>
-                            <p className="text-sm text-muted-foreground">{profile.full_name}</p>
+                            <p className="text-sm text-muted-foreground">{user.name}</p>
                         </div>
                     </div>
                     <Button variant="ghost" onClick={handleLogout} size="icon">
@@ -117,7 +88,7 @@ const Dashboard = () => {
                             <div>
                                 <CardDescription>Saldo Disponível</CardDescription>
                                 <CardTitle className="text-4xl font-bold mt-2">
-                                    R$ {profile.balance.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    R$ {user.balance.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </CardTitle>
                             </div>
                             <Button variant="ghost" size="icon" onClick={handleRefresh}>
@@ -145,7 +116,7 @@ const Dashboard = () => {
                     open={depositOpen}
                     onOpenChange={setDepositOpen}
                     userId={user!.id}
-                    currentBalance={profile.balance}
+                    currentBalance={user.balance}
                     onSuccess={handleRefresh}
                 />
 
@@ -153,8 +124,8 @@ const Dashboard = () => {
                     open={transferOpen}
                     onOpenChange={setTransferOpen}
                     userId={user!.id}
-                    currentBalance={profile.balance}
-                    userEmail={profile.email}
+                    currentBalance={user.balance}
+                    userEmail={user.email}
                     onSuccess={handleRefresh}
                 />
             </div>
@@ -162,4 +133,4 @@ const Dashboard = () => {
     );
 };
 
-export default Dashboard;
+
