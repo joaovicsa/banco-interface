@@ -9,10 +9,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
-      className="toaster group"
+      // Força o z-index via className + inline style
+      className="toaster group fixed top-0 right-0 pointer-events-none"
       style={
         {
-          "zIndex": 9999,
+          zIndex: 2147483647, // valor máximo seguro para z-index
           "--normal-bg": "var(--popover)",
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
