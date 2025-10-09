@@ -1,3 +1,9 @@
+/**
+ * @file page.tsx
+ * @description Página de autenticação da aplicação Banco Interface.
+ * Permite que o usuário realize login ou cadastro, armazenando o ID localmente e redirecionando para o dashboard.
+ */
+
 "use client";
 
 import { useState } from "react";
@@ -20,6 +26,14 @@ import {
 } from "@/components/ui/tabs";
 import { Wallet } from "lucide-react";
 
+/**
+ * @component Auth
+ * @description Componente de autenticação que exibe abas para login e cadastro.
+ * Realiza chamadas à API para autenticar ou registrar o usuário e redireciona para o dashboard
+ *
+ * @returns {JSX.Element} Interface de login/cadastro.
+ */
+
 const Auth = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -29,6 +43,12 @@ const Auth = () => {
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [signupFullName, setSignupFullName] = useState("");
+
+  /**
+     * @function handleLogin
+     * @description Envia os dados de login para a API e redireciona o usuário em caso de sucesso.
+     * @param {React.FormEvent} e - Evento de envio do formulário.
+     */
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +72,12 @@ const Auth = () => {
 
     setLoading(false);
   };
+
+  /**
+     * @function handleSignup
+     * @description Envia os dados de cadastro para a API e redireciona o usuário em caso de sucesso.
+     * @param {React.FormEvent} e - Evento de envio do formulário.
+     */
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();

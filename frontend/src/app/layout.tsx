@@ -1,8 +1,8 @@
-
 /**
  * @file app/layout.tsx
- * @description Root layout component for the Next.js application. It wraps all pages with global providers,
- *              a consistent header and footer, and applies global styles and fonts.
+ * @description Componente de layout raiz da aplicação Next.js.
+ * Envolve todas as páginas com provedores globais, aplica estilos e fontes padrão,
+ * e define metadados para SEO e configuração do navegador.
  */
 
 import './globals.css';
@@ -14,12 +14,13 @@ import { JSX } from 'react';
 import Head from 'next/head';
 import Providers from '@/providers/Providers';
 
-// Load Inter font with Latin subset
+// Carrega a fonte Inter com suporte ao conjunto Latin
 
 const inter = Inter({ subsets: ['latin'] });
 
+
 /**
- * Metadata for the application, used by Next.js for SEO and browser configuration.
+ * Metadados da aplicação, utilizados pelo Next.js para SEO e configurações de navegador.
  * @type {Metadata}
  */
 
@@ -28,14 +29,15 @@ export const metadata: Metadata = {
   description: 'Gerenciamento de Transações Bancárias',
 };
 
+
 /**
- * Root layout component that wraps all pages in the application.
+ * @component RootLayout
+ * @description Componente de layout raiz que envolve todas as páginas da aplicação.
+ * Aplica estilos globais, fontes e provedores de contexto.
  *
- * @component
- * @name RootLayout
- * @param {Object} props - Component props.
- * @param {React.ReactNode} props.children - The page content to be rendered inside the layout.
- * @returns {JSX.Element} The root layout including global providers, header, footer, and helper widget.
+ * @param {Object} props - Propriedades do componente.
+ * @param {React.ReactNode} props.children - Conteúdo da página a ser renderizado dentro do layout.
+ * @returns {JSX.Element} Elemento JSX que representa o layout raiz.
  */
 
 export default function RootLayout({
