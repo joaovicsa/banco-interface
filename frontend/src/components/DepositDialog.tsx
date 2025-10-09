@@ -1,4 +1,11 @@
-import { useState } from "react";
+/**
+ * @file components/DepositDialog.tsx
+ * @description Componente de diálogo para realizar depósitos na carteira digital.
+ * Permite ao usuário inserir um valor, valida o input e envia a requisição para a API.
+ * Exibe mensagens de sucesso ou erro com feedback visual via toast.
+ */
+
+import { JSX, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +19,15 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
+/**
+ * @type {Object} DepositDialogProps
+ * @property {boolean} open - Define se o diálogo está visível.
+ * @property {(open: boolean) => void} onOpenChange - Função para abrir ou fechar o diálogo.
+ * @property {string} userId - ID do usuário que está realizando o depósito.
+ * @property {number} currentBalance - Saldo atual do usuário.
+ * @property {() => void} onSuccess - Função chamada após depósito bem-sucedido.
+ */
+
 type DepositDialogProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -20,15 +36,30 @@ type DepositDialogProps = {
     onSuccess: () => void;
 };
 
+/**
+ * @component DepositDialog
+ * @description Componente que exibe um modal para realizar depósitos.
+ * Valida o valor inserido, envia requisição à API e atualiza o estado da aplicação.
+ *
+ * @param {DepositDialogProps} props - Propriedades do componente.
+ * @returns {JSX.Element} Elemento JSX do diálogo de depósito.
+ */
+
 const DepositDialog = ({
     open,
     onOpenChange,
     userId,
     currentBalance,
     onSuccess,
-}: DepositDialogProps) => {
+}: DepositDialogProps): JSX.Element => {
     const [amount, setAmount] = useState("");
     const [loading, setLoading] = useState(false);
+
+    /**
+         * @function handleDeposit
+         * @description Valida o valor do depósito e envia requisição à API.
+         * Exibe mensagens de erro ou sucesso via toast.
+    */
 
     const handleDeposit = async () => {
         const depositAmount = parseFloat(amount);

@@ -1,5 +1,20 @@
+/**
+ * @file api/user/[id]
+ * @description Endpoint para consulta de dados de perfil e histórico de transações de um usuário.
+ * Retorna até 50 transações mais recentes, incluindo informações de usuários relacionados.
+ * Utiliza Prisma como ORM e inclui tratamento para valores do tipo BigInt.
+ */
+
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+
+/**
+ * @function serializeBigInt
+ * @description Utilitário para converter valores BigInt em strings compatíveis com JSON.
+ *
+ * @param {unknown} obj - Objeto que pode conter valores do tipo BigInt.
+ * @returns {unknown} Objeto com BigInt convertido para string.
+ */
 
 function serializeBigInt(obj: unknown): unknown {
     return JSON.parse(
@@ -9,10 +24,27 @@ function serializeBigInt(obj: unknown): unknown {
     );
 }
 
+/**
+ * @function GET
+ * @async
+ * @description Função que trata requisições GET para buscar dados de um usuário específico.
+ * O ID do usuário é extraído da rota dinâmica `[id]`.
+ * Retorna dados de perfil e até 50 transações ordenadas por data de criação.
+ *
+ * @param {Request} req - Objeto da requisição HTTP.
+ * @param {Object} context - Contexto da rota contendo os parâmetros.
+ * @param {Promise<{ id: string }>} context.params - Parâmetros da rota, incluindo o `id` do usuário.
+ *
+ * @returns {Promise<NextResponse>} Resposta JSON contendo dados do usuário e transações.
+ *
+ * @throws {Error} Retorna erro 404 se o usuário não for encontrado.
+ * Retorna erro 500 em caso de falha interna ao buscar os dados.
+ */
+
 export async function GET(
     req: Request,
     context: { params: Promise<{ id: string }> }
-) {
+): Promise<NextResponse> {
     try {
         const { id } = await context.params;
         const userId = id;

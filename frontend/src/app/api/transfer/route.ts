@@ -1,7 +1,29 @@
+/**
+ * @file api/transfer
+ * @description Endpoint responsável por realizar transferências entre usuários.
+ * Valida os dados, atualiza os saldos de remetente e destinatário, e registra as transações.
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(req: NextRequest) {
+/**
+ * @function POST
+ * @async
+ * @description Função que trata requisições POST para transferência de valores entre usuários.
+ * Verifica validade dos dados, garante que o destinatário seja diferente do remetente,
+ * atualiza os saldos e registra as transações de envio e recebimento.
+ *
+ * @param {NextRequest} req - Objeto da requisição contendo `userId`, `userEmail`, `recipientEmail` e `amount`.
+ * @returns {Promise<NextResponse>} Resposta JSON indicando sucesso ou erro.
+ *
+ * @throws {Error}
+ * - Retorna erro 400 se os dados forem inválidos ou se o saldo for insuficiente.
+ * - Retorna erro 404 se remetente ou destinatário não forem encontrados.
+ * - Retorna erro 500 em caso de falha interna no servidor.
+ */
+
+export async function POST(req: NextRequest): Promise<NextResponse> {
     try {
         const { userId, userEmail, recipientEmail, amount } = await req.json();
 
