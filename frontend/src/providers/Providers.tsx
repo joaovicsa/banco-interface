@@ -9,6 +9,7 @@
 
 import { JSX, ReactNode } from 'react';
 import { ThemeProvider } from 'next-themes';
+import { Toaster as Sonner } from '@/components/ui/sonner';
 
 
 
@@ -41,6 +42,7 @@ interface ProvidersProps {
 export default function Providers({ children }: ProvidersProps): JSX.Element {
     return (
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <Sonner />
             {children}
         </ThemeProvider>
     );
