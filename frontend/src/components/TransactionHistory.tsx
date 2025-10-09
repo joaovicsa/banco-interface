@@ -1,9 +1,17 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/**
+ * @file components/TransactionHistory.tsx
+ * @description Componente que exibe o histórico de transações do usuário.
+ * Permite visualizar detalhes de cada transação e realizar reversões quando aplicável.
+ * Integra com a API para buscar dados e atualizar o estado da aplicação.
+ */
+
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowDownToLine, ArrowUpRight, Undo2, User } from "lucide-react";
+import { ArrowDownToLine, ArrowUpRight, RefreshCcw, Undo2, User } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -15,6 +23,19 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
+/**
+ * @type {Object} Transaction
+ * @property {string} id - Identificador da transação.
+ * @property {string} type - Tipo da transação (deposit, transfer_sent, etc.).
+ * @property {number} amount - Valor da transação.
+ * @property {number} balance_after - Saldo após a transação.
+ * @property {string|null} description - Descrição da transação.
+ * @property {boolean} reversed - Indica se a transação foi revertida.
+ * @property {string|null} reversal_of - ID da transação original (caso seja reversão).
+ * @property {string} created_at - Data e hora da transação.
+ * @property {string|null} related_user_id - ID do usuário relacionado (em transferências).
+ */
 
 type Transaction = {
     id: string;
@@ -28,10 +49,19 @@ type Transaction = {
     related_user_id: string | null;
 };
 
-interface TransactionHistoryProps {
+type TransactionHistoryProps = {
     userId: string;
     onRefresh: () => void;
 }
+
+/**
+ * @component TransactionHistory
+ * @description Componente que exibe a lista de transações do usuário.
+ * Permite reverter transações e mostra informações detalhadas como tipo, valor, saldo e usuário relacionado.
+ *
+ * @param {TransactionHistoryProps} props - Propriedades do componente.
+ * @returns {JSX.Element} Elemento JSX com histórico de transações.
+ */
 
 const TransactionHistory = ({ userId, onRefresh }: TransactionHistoryProps) => {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -41,6 +71,11 @@ const TransactionHistory = ({ userId, onRefresh }: TransactionHistoryProps) => {
     useEffect(() => {
         fetchTransactions();
     }, [userId]);
+
+    /**
+         * @function fetchTransactions
+         * @description Busca as transações do usuário na API e atualiza o estado.
+    */
 
     const fetchTransactions = async () => {
         setLoading(true);
@@ -56,6 +91,16 @@ const TransactionHistory = ({ userId, onRefresh }: TransactionHistoryProps) => {
 
         setLoading(false);
     };
+
+    const handleRefresh = async () => await fetchTransactions();
+    /**
+         * @function handleReverseTransaction
+         * @description Envia requisição para reverter uma transação específica.
+         *
+         * @param {string} transactionId - ID da transação a ser revertida.
+         * @param {number} originalAmount - Valor original da transação.
+         * @param {string} transactionType - Tipo da transação original.
+         */
 
     const handleReverseTransaction = async (
         transactionId: string,
@@ -89,6 +134,11 @@ const TransactionHistory = ({ userId, onRefresh }: TransactionHistoryProps) => {
         }
     };
 
+
+    /**
+         * @function getTransactionIcon
+         * @description Retorna o ícone correspondente ao tipo de transação.
+         */
     const getTransactionIcon = (type: string) => {
         switch (type) {
             case "deposit":
@@ -104,6 +154,11 @@ const TransactionHistory = ({ userId, onRefresh }: TransactionHistoryProps) => {
         }
     };
 
+    /**
+         * @function getTransactionLabel
+         * @description Retorna o rótulo textual do tipo de transação.
+         */
+
     const getTransactionLabel = (type: string) => {
         switch (type) {
             case "deposit":
@@ -118,6 +173,11 @@ const TransactionHistory = ({ userId, onRefresh }: TransactionHistoryProps) => {
                 return type;
         }
     };
+
+    /**
+         * @function getTransactionColor
+         * @description Retorna a cor de texto para o tipo de transação.
+         */
 
     const getTransactionColor = (type: string) => {
         switch (type) {
@@ -150,10 +210,18 @@ const TransactionHistory = ({ userId, onRefresh }: TransactionHistoryProps) => {
 
     return (
         <Card className="mb-8 border-none shadow-md rounded-2xl bg-white">
-            <CardHeader className="pb-4">
+            <CardHeader className="pb-4 flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold">
                     Histórico de Transações
                 </CardTitle>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-gray-600 hover:text-gray-800"
+                    onClick={handleRefresh}
+                >
+                    <RefreshCcw className="w-5 h-5" />
+                </Button>
             </CardHeader>
             <CardContent className="pt-0 h-96 pb-4 overflow-y-auto">
                 {transactions.length === 0 ? (

@@ -45,11 +45,11 @@
     ARG DEBIAN_FRONTEND=noninteractive
 
     # Instala tzdata e configura o timezone
-    RUN apt-get update && \
-        apt-get install -y tzdata && \
-        ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
-        echo $TZ > /etc/timezone && \
-        dpkg-reconfigure -f noninteractive tzdata
+   RUN apt-get update && \
+    apt-get install -y tzdata openssl && \
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
+    echo $TZ > /etc/timezone && \
+    dpkg-reconfigure -f noninteractive tzdata
 
  # Mostra a hora atual no log de build
     RUN date

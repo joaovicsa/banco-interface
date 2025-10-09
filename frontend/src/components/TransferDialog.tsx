@@ -1,6 +1,13 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/**
+ * @file components/TransferDialog.tsx
+ * @description Componente de diálogo para realizar transferências entre usuários da carteira digital.
+ * Valida os dados inseridos, envia requisição à API e exibe mensagens de sucesso ou erro via toast.
+ */
+
 "use client";
 
-import { useState } from "react";
+import { JSX, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +21,16 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
-interface TransferDialogProps {
+/**
+ * @type {Object} TransferDialogProps
+ * @property {boolean} open - Define se o diálogo está visível.
+ * @property {(open: boolean) => void} onOpenChange - Função para abrir ou fechar o diálogo.
+ * @property {string} userId - ID do usuário que está realizando a transferência.
+ * @property {number} currentBalance - Saldo atual do usuário.
+ * @property {string} userEmail - E-mail do usuário remetente.
+ * @property {() => void} onSuccess - Função chamada após transferência bem-sucedida.
+ */
+type TransferDialogProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     userId: string;
@@ -23,6 +39,15 @@ interface TransferDialogProps {
     onSuccess: () => void;
 }
 
+/**
+ * @component TransferDialog
+ * @description Componente que exibe um modal para realizar transferências entre usuários.
+ * Valida os dados, envia requisição à API e atualiza o estado da aplicação.
+ *
+ * @param {TransferDialogProps} props - Propriedades do componente.
+ * @returns {JSX.Element} Elemento JSX do diálogo de transferência.
+ */
+
 const TransferDialog = ({
     open,
     onOpenChange,
@@ -30,10 +55,16 @@ const TransferDialog = ({
     currentBalance,
     userEmail,
     onSuccess,
-}: TransferDialogProps) => {
+}: TransferDialogProps): JSX.Element => {
     const [recipientEmail, setRecipientEmail] = useState("");
     const [amount, setAmount] = useState("");
     const [loading, setLoading] = useState(false);
+
+    /**
+         * @function handleTransfer
+         * @description Valida os dados da transferência e envia requisição à API.
+         * Exibe mensagens de erro ou sucesso via toast.
+         */
 
     const handleTransfer = async () => {
         const transferAmount = parseFloat(amount);

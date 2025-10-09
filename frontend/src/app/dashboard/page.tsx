@@ -1,3 +1,12 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/**
+ * @file page/dashboard.tsx
+ * @description Página principal do usuário autenticado na aplicação Banco Interface.
+ * Exibe o saldo atual, histórico de transações, e permite realizar depósitos e transferências.
+ * Utiliza componentes reutilizáveis e integra com a API para buscar dados do usuário.
+ */
+
+
 "use client";
 
 import DepositDialog from "@/components/DepositDialog";
@@ -20,8 +29,18 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
-import { useEffect, useState } from "react";
+import { JSX, useEffect, useState } from "react";
 import { TransactionSchema } from "@/types";
+import DashboardSkeleton from "@/components/DashboardSkeleton";
+
+/**
+ * @type {Object} User
+ * @property {string} id - Identificador único do usuário.
+ * @property {string} name - Nome do usuário.
+ * @property {string} email - E-mail do usuário.
+ * @property {number} balance - Saldo atual do usuário.
+ * @property {Array<Transaction>} transactions - Lista de transações do usuário.
+ */
 
 type User = {
     id: string;
@@ -31,7 +50,16 @@ type User = {
     transactions: z.infer<typeof TransactionSchema>[];
 };
 
-export default function Dashboard() {
+
+/**
+ * @component Dashboard
+ * @description Componente principal da carteira digital.
+ * Exibe informações do usuário, saldo, histórico de transações e botões para ações financeiras.
+ *
+ * @returns {JSX.Element} Interface da carteira digital.
+ */
+
+export default function Dashboard(): JSX.Element {
     const router = useRouter();
     const [user, setUser] = useState<User | null>(null);
     const [transactions, setTransactions] = useState<
@@ -40,15 +68,24 @@ export default function Dashboard() {
     const [depositOpen, setDepositOpen] = useState(false);
     const [transferOpen, setTransferOpen] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
+    const [isMounted, setIsMounted] = useState(false);
 
+    // Recupera o ID do usuário armazenado localmente ao carregar a página.
     useEffect(() => {
+        setIsMounted(true);
         const storedId = localStorage.getItem("userId");
         if (storedId) setUserId(storedId);
     }, []);
 
+    //  Busca os dados do usuário quando o ID estiver disponível.
     useEffect(() => {
         if (userId) fetchUser();
     }, [userId]);
+
+    /**
+         * @function fetchUser
+         * @description Consulta a API para obter os dados do usuário e valida as transações.
+         */
 
     const fetchUser = async () => {
         const res = await fetch(`/api/user/${userId}`);
@@ -61,8 +98,17 @@ export default function Dashboard() {
         setTransactions(validatedTransactions.success ? validatedTransactions.data : []);
     };
 
-    const handleRefresh = () => fetchUser();
 
+    /**
+         * @function handleRefresh
+         * @description Atualiza os dados do usuário.
+         */
+    const handleRefresh = async () => await fetchUser();
+
+    /**
+         * @function handleLogout
+         * @description Realiza logout do usuário e redireciona para a página inicial.
+         */
     const handleLogout = async () => {
         try {
             await fetch("/api/auth/logout", { method: "POST" });
@@ -72,12 +118,8 @@ export default function Dashboard() {
         }
     };
 
-    if (!user) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-[#f6f8fb] text-gray-600">
-                <div className="animate-pulse">Carregando...</div>
-            </div>
-        );
+    if (!isMounted || !userId || !user) {
+        return <DashboardSkeleton />;
     }
 
     return (
