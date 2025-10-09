@@ -31,6 +31,7 @@ import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { JSX, useEffect, useState } from "react";
 import { TransactionSchema } from "@/types";
+import DashboardSkeleton from "@/components/DashboardSkeleton";
 
 /**
  * @type {Object} User
@@ -67,10 +68,11 @@ export default function Dashboard(): JSX.Element {
     const [depositOpen, setDepositOpen] = useState(false);
     const [transferOpen, setTransferOpen] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
-
+    const [isMounted, setIsMounted] = useState(false);
 
     // Recupera o ID do usuário armazenado localmente ao carregar a página.
     useEffect(() => {
+        setIsMounted(true);
         const storedId = localStorage.getItem("userId");
         if (storedId) setUserId(storedId);
     }, []);
@@ -101,7 +103,7 @@ export default function Dashboard(): JSX.Element {
          * @function handleRefresh
          * @description Atualiza os dados do usuário.
          */
-    const handleRefresh = () => fetchUser();
+    const handleRefresh = async () => await fetchUser();
 
     /**
          * @function handleLogout
@@ -116,12 +118,8 @@ export default function Dashboard(): JSX.Element {
         }
     };
 
-    if (!user) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-[#f6f8fb] text-gray-600">
-                <div className="animate-pulse">Carregando...</div>
-            </div>
-        );
+    if (!isMounted || !userId || !user) {
+        return <DashboardSkeleton />;
     }
 
     return (

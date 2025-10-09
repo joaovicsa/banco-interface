@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowDownToLine, ArrowUpRight, Undo2, User } from "lucide-react";
+import { ArrowDownToLine, ArrowUpRight, RefreshCcw, Undo2, User } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -92,7 +92,7 @@ const TransactionHistory = ({ userId, onRefresh }: TransactionHistoryProps) => {
         setLoading(false);
     };
 
-
+    const handleRefresh = async () => await fetchTransactions();
     /**
          * @function handleReverseTransaction
          * @description Envia requisição para reverter uma transação específica.
@@ -210,10 +210,18 @@ const TransactionHistory = ({ userId, onRefresh }: TransactionHistoryProps) => {
 
     return (
         <Card className="mb-8 border-none shadow-md rounded-2xl bg-white">
-            <CardHeader className="pb-4">
+            <CardHeader className="pb-4 flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold">
                     Histórico de Transações
                 </CardTitle>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-gray-600 hover:text-gray-800"
+                    onClick={handleRefresh}
+                >
+                    <RefreshCcw className="w-5 h-5" />
+                </Button>
             </CardHeader>
             <CardContent className="pt-0 h-96 pb-4 overflow-y-auto">
                 {transactions.length === 0 ? (
