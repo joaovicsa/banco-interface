@@ -52,7 +52,7 @@ export default function Dashboard() {
     const handleRefresh = () => {
         fetchUser();
     };
-
+   
     const handleLogout = async () => {
         try {
             await fetch("/api/auth/logout", { method: "POST" });
@@ -131,7 +131,7 @@ export default function Dashboard() {
                 <TransferDialog
                     open={transferOpen}
                     onOpenChange={setTransferOpen}
-                    userId={user!.id}
+                    userId={user.id}
                     currentBalance={user.balance}
                     userEmail={user.email}
                     onSuccess={handleRefresh}

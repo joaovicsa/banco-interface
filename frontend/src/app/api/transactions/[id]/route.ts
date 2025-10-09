@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+// 🔧 Utility to convert BigInt values into strings (JSON-safe)
+function serializeBigInt(obj: unknown): unknown {
+    return JSON.parse(
+        JSON.stringify(obj, (_, value) =>
+            typeof value === "bigint" ? value.toString() : value
+        )
+    );
+}
+
 export async function GET(
     req: Request,
     context: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id } = await context.params; // ✅ await params
+        const { id } = await context.params;
         const userId = id;
 
         const transactions = await prisma.transactions.findMany({
@@ -31,9 +40,13 @@ export async function GET(
             }
         });
 
-        return NextResponse.json({ transactions, relatedUsers });
+        // ✅ Serialize BigInt values before returning
+        return NextResponse.json(serializeBigInt({ transactions, relatedUsers }));
     } catch (error) {
         console.error("Erro ao buscar transações:", error);
-        return NextResponse.json({ error: "Erro interno ao buscar transações" }, { status: 500 });
+        return NextResponse.json(
+            { error: "Erro interno ao buscar transações" },
+            { status: 500 }
+        );
     }
 }

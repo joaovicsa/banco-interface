@@ -1,12 +1,20 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+function serializeBigInt(obj: unknown): unknown {
+    return JSON.parse(
+        JSON.stringify(obj, (_, value) =>
+            typeof value === "bigint" ? value.toString() : value
+        )
+    );
+}
+
 export async function GET(
     req: Request,
     context: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id } = await context.params; 
+        const { id } = await context.params;
         const userId = id;
 
         const user = await prisma.profiles.findUnique({
@@ -43,7 +51,7 @@ export async function GET(
             return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
         }
 
-        return NextResponse.json(user);
+        return NextResponse.json(serializeBigInt(user));
     } catch (error) {
         console.error("Erro ao buscar usuário:", error);
         return NextResponse.json({ error: "Erro interno ao buscar usuário" }, { status: 500 });

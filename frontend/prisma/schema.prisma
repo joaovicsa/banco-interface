@@ -25,9 +25,9 @@ model transactions {
   amount             BigInt?
   balance_after      BigInt?
   description        String?           @db.VarChar
-  related_user_id    String?           @default("")
+  related_user_id    String?
   reversed           Boolean           @default(false)
-  user_id            String            @default("")
+  user_id            String
   reversal_of        BigInt?
   type               transaction_type?
   related            profiles?         @relation("RelatedTransactions", fields: [related_user_id], references: [id], onDelete: SetDefault, onUpdate: Restrict)
