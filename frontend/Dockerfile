@@ -40,9 +40,6 @@
 
     EXPOSE 3000
 
-    RUN apt-get update && apt-get install -y ldap-utils
-    RUN apt-get update -y && apt-get install -y openssl
-
     ENV TZ=America/Sao_Paulo
 
     ARG DEBIAN_FRONTEND=noninteractive
