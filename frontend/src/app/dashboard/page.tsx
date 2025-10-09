@@ -103,7 +103,7 @@ export default function Dashboard(): JSX.Element {
          * @function handleRefresh
          * @description Atualiza os dados do usuário.
          */
-    const handleRefresh = () => fetchUser();
+    const handleRefresh = async () => await fetchUser();
 
     /**
          * @function handleLogout
