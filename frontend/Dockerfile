@@ -1,57 +1,85 @@
-# ---- 1. Builder Stage ----
-    FROM node:slim AS builder
+# ============================================
+# ==== 1. Builder Stage ====
+# ============================================
+FROM node:20-slim AS builder
 
-    WORKDIR /app
+# Define diretório de trabalho
+WORKDIR /app
 
-    COPY package*.json ./
-    COPY prisma ./prisma
+# Copia dependências e schema do Prisma
+COPY package*.json ./
+COPY prisma ./prisma
 
-    RUN npm install
+# Instala dependências de build
+RUN apt-get update -y && apt-get install -y openssl
+RUN npm ci
 
-   COPY src/app ./src/app
-    COPY src/components ./src/components
-    COPY src/lib ./src/lib
-    COPY src/providers ./src/providers
-    COPY src/types ./src/types
-    COPY public ./public
-    COPY tailwind.config.* ./
-    COPY postcss.config.* ./
-    COPY next.config.ts ./
-    COPY tsconfig.json ./
-    COPY .env ./
+# Copia código-fonte e configs
+COPY src/app ./src/app
+COPY src/components ./src/components
+COPY src/lib ./src/lib
+COPY src/providers ./src/providers
+COPY src/types ./src/types
+COPY public ./public
+COPY tailwind.config.* ./
+COPY postcss.config.* ./
+COPY next.config.ts ./
+COPY tsconfig.json ./
+COPY .env ./
+
+# Gera build de produção
+RUN npm run build
 
 
-    RUN npm run build
+# ============================================
+# ==== 2. Test Runner Stage (opcional) ====
+# ============================================
+# Este estágio é usado apenas para rodar testes antes de gerar a imagem final.
+FROM node:20-slim AS tester
 
-    FROM node:slim AS runner
+WORKDIR /app
 
-    WORKDIR /app
+# Copia build e dependências do builder
+COPY --from=builder /app ./
 
-    ENV NODE_ENV=production
+# Instala Playwright (para testes E2E)
+RUN npx playwright install --with-deps
 
-    COPY --from=builder /app/public ./public
-    COPY --from=builder /app/.next ./.next
-    COPY --from=builder /app/node_modules/.prisma /app/node_modules/.prisma
-    COPY --from=builder /app/node_modules ./node_modules
-    COPY --from=builder /app/prisma /app/prisma
-    COPY --from=builder /app/package.json ./package.json
-    COPY --from=builder /app/next.config.ts ./next.config.ts
-    COPY --from=builder /app/.env ./.env
+# Executa testes unitários + E2E
+# Você pode comentar essa linha se quiser pular os testes
+CMD ["sh", "-c", "npx vitest run && npx playwright test"]
 
-    EXPOSE 3000
 
-    ENV TZ=America/Sao_Paulo
+# ============================================
+# ==== 3. Runner Stage (produção) ====
+# ============================================
+FROM node:20-slim AS runner
 
-    ARG DEBIAN_FRONTEND=noninteractive
+WORKDIR /app
+ENV NODE_ENV=production
+ENV TZ=America/Sao_Paulo
 
-    # Instala tzdata e configura o timezone
-   RUN apt-get update && \
+# Instala pacotes necessários
+RUN apt-get update && \
     apt-get install -y tzdata openssl && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
     echo $TZ > /etc/timezone && \
     dpkg-reconfigure -f noninteractive tzdata
 
- # Mostra a hora atual no log de build
-    RUN date
+# Copia apenas o essencial do builder
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules/.prisma /app/node_modules/.prisma
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/next.config.ts ./next.config.ts
+COPY --from=builder /app/.env ./.env
 
-    CMD ["npm", "run", "start"]
+EXPOSE 3000
+
+# Mostra hora atual no log
+RUN date
+
+# Comando padrão de inicialização
+CMD ["npm", "run", "start"]
