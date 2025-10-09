@@ -1,8 +1,7 @@
-
 /**
- * @file Providers.tsx
- * @description Wraps the application with global context providers including theme, authentication,
- *              user data, and event data. Ensures consistent state and configuration across the app.
+ * @file providers/providers.tsx
+ * @description Envolve a aplicação com provedores de contexto globais, como tema, autenticação,
+ * dados do usuário e notificações. Garante consistência de estado e configuração em toda a aplicação.
  */
 
 'use client';
@@ -11,34 +10,26 @@ import { JSX, ReactNode } from 'react';
 import { ThemeProvider } from 'next-themes';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 
-
-
 /**
- * Props for the Providers component.
- * @type {ProvidersProps}
- * @property {ReactNode} children - The child components to be wrapped by the providers.
+ * @typedef {Object} ProvidersProps
+ * @property {ReactNode} children - Componentes filhos que serão envolvidos pelos provedores.
  */
-
 interface ProvidersProps {
     children: ReactNode;
 }
 
 /**
- * @component
- * @name Providers
- * @description Wraps the application with multiple context providers:
- * - `ThemeProvider` for light/dark mode support.
- * - `AuthProvider` for authentication state.
- * - `UserProvider` for user-specific data.
- * - `EventProvider` for event-related state.
+ * @component Providers
+ * @description Componente que aplica provedores globais à aplicação:
+ * - `ThemeProvider`: gerencia tema claro/escuro com suporte ao sistema.
+ * - `Sonner`: gerencia notificações visuais (toasts).
  *
- * This component should be used at the root of the application to ensure all pages
- * and components have access to the necessary global contexts.
+ * Este componente deve ser usado na raiz da aplicação para garantir que todos os componentes
+ * tenham acesso aos contextos globais necessários.
  *
- * @param {ProvidersProps} props - The component props.
- * @returns {JSX.Element} The wrapped children with all providers applied.
+ * @param {ProvidersProps} props - Propriedades do componente.
+ * @returns {JSX.Element} Elemento JSX com os provedores aplicados.
  */
-
 export default function Providers({ children }: ProvidersProps): JSX.Element {
     return (
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
