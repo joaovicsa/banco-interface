@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /**
  * @file page/dashboard.tsx
  * @description Página principal do usuário autenticado na aplicação Banco Interface.
@@ -78,7 +79,6 @@ export default function Dashboard(): JSX.Element {
     useEffect(() => {
         if (userId) fetchUser();
     }, [userId]);
-
 
     /**
          * @function fetchUser

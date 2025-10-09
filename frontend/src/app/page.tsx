@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { JSX, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,7 +34,7 @@ import { Wallet } from "lucide-react";
  * @returns {JSX.Element} Interface de login/cadastro.
  */
 
-const Auth = () => {
+const Auth = (): JSX.Element => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");

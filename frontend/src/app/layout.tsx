@@ -11,7 +11,6 @@ import { Inter } from 'next/font/google';
 
 
 import { JSX } from 'react';
-import Head from 'next/head';
 import Providers from '@/providers/Providers';
 
 // Carrega a fonte Inter com suporte ao conjunto Latin
