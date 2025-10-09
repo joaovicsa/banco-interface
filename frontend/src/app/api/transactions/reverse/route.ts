@@ -28,25 +28,26 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         const user = await prisma.profiles.findUnique({ where: { id: userId } });
         if (!user) return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
 
-        let newBalance = user.balance;
+        // Forçar para number (Int)
+        let newBalance: number = Number(user.balance);
 
-        if (transactionType === "deposit") newBalance -= originalAmount;
-        else if (transactionType === "transfer_sent") newBalance += originalAmount;
-        else if (transactionType === "transfer_received") newBalance -= originalAmount;
+        if (transactionType === "deposit") newBalance -= Number(originalAmount);
+        else if (transactionType === "transfer_sent") newBalance += Number(originalAmount);
+        else if (transactionType === "transfer_received") newBalance -= Number(originalAmount);
 
         await prisma.profiles.update({
             where: { id: userId },
-            data: { balance: newBalance },
+            data: { balance: newBalance }, // agora é Int
         });
 
         await prisma.transactions.create({
             data: {
                 user_id: userId,
                 type: "reversal",
-                amount: originalAmount,
-                balance_after: newBalance,
+                amount: BigInt(originalAmount),
+                balance_after: BigInt(newBalance),
                 description: "Reversão de transação",
-                reversal_of: transactionId,
+                reversal_of: BigInt(transactionId),
             },
         });
 
