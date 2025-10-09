@@ -1,10 +1,30 @@
+/**
+ * @file api/auth/signup
+ * @description Endpoint responsável por registrar novos usuários.
+ * Utiliza Prisma como ORM e bcrypt para criptografar a senha antes de salvar no banco.
+ */
+
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-export async function POST(req: Request) {
+/**
+ * @function POST
+ * @async
+ * @description Função que trata requisições POST para criação de conta de usuário.
+ * Verifica se os campos obrigatórios foram preenchidos, se o e-mail já está cadastrado,
+ * e cria um novo perfil com senha criptografada.
+ *
+ * @param {Request} req - Objeto da requisição contendo `email`, `password` e `name` no corpo.
+ * @returns {Promise<NextResponse>} Resposta JSON com mensagem de sucesso e ID do novo usuário ou erro.
+ *
+ * @throws {Error} Retorna erro 400 se campos estiverem ausentes ou se o usuário já existir.
+ * Retorna erro 500 em caso de falha interna no servidor.
+ */
+
+export async function POST(req: Request): Promise<NextResponse> {
     try {
         const { email, password, name } = await req.json();
 
@@ -32,7 +52,6 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ message: "Account created successfully", id: newUser.id }, { status: 201 });
 
-        // return NextResponse.json({ message: "Account created successfully" }, { status: 201 });
     } catch (err) {
         console.error(err);
         return NextResponse.json({ error: "Server error" }, { status: 500 });
