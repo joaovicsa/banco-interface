@@ -4,12 +4,24 @@ import DepositDialog from "@/components/DepositDialog";
 import TransactionHistory from "@/components/TransactionHistory";
 import TransferDialog from "@/components/TransferDialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TransactionTypeEnum, TransactionSchema } from "@/types";
-import { ArrowDownToLine, ArrowUpRight, LogOut, RefreshCcw, Wallet } from "lucide-react";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
+import {
+    ArrowDownToLine,
+    ArrowUpRight,
+    LogOut,
+    RefreshCcw,
+    Wallet,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
-import { set, z } from "zod";
+import { z } from "zod";
 import { useEffect, useState } from "react";
+import { TransactionSchema } from "@/types";
 
 type User = {
     id: string;
@@ -22,22 +34,20 @@ type User = {
 export default function Dashboard() {
     const router = useRouter();
     const [user, setUser] = useState<User | null>(null);
-    const [transactions, setTransactions] = useState<z.infer<typeof TransactionSchema>[]>([]);
+    const [transactions, setTransactions] = useState<
+        z.infer<typeof TransactionSchema>[]
+    >([]);
     const [depositOpen, setDepositOpen] = useState(false);
     const [transferOpen, setTransferOpen] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
 
     useEffect(() => {
         const storedId = localStorage.getItem("userId");
-        if (storedId) {
-            setUserId(storedId);
-        }
+        if (storedId) setUserId(storedId);
     }, []);
 
     useEffect(() => {
-        if (userId) {
-            fetchUser();
-        }
+        if (userId) fetchUser();
     }, [userId]);
 
     const fetchUser = async () => {
@@ -45,14 +55,14 @@ export default function Dashboard() {
         const data = await res.json();
         setUser(data);
 
-        const validatedTransactions = z.array(TransactionSchema).safeParse(data.transactions);
+        const validatedTransactions = z
+            .array(TransactionSchema)
+            .safeParse(data.transactions);
         setTransactions(validatedTransactions.success ? validatedTransactions.data : []);
     };
 
-    const handleRefresh = () => {
-        fetchUser();
-    };
-   
+    const handleRefresh = () => fetchUser();
+
     const handleLogout = async () => {
         try {
             await fetch("/api/auth/logout", { method: "POST" });
@@ -64,53 +74,83 @@ export default function Dashboard() {
 
     if (!user) {
         return (
-            <div className="min-h-screen gradient-subtle flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center bg-[#f6f8fb] text-gray-600">
                 <div className="animate-pulse">Carregando...</div>
             </div>
         );
     }
 
-    const totalBalance = transactions.reduce((sum, t) => sum + t.amount, 0);
-
     return (
-        <div className="min-h-screen gradient-subtle">
-            <div className="container mx-auto p-4 md:p-8 max-w-6xl">
+        <div className="min-h-screen bg-[#f6f8fb] text-gray-900">
+            <div className="container mx-auto p-4 md:p-8 max-w-5xl">
+                {/* Header */}
                 <div className="flex justify-between items-center mb-8">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center">
+                        <div
+                            className="w-12 h-12 rounded-xl flex items-center justify-center"
+                            style={{
+                                background:
+                                    "linear-gradient(135deg, #12B886 0%, #0CA678 100%)",
+                            }}
+                        >
                             <Wallet className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold">Carteira Digital</h1>
-                            <p className="text-sm text-muted-foreground">{user.name}</p>
+                            <h1 className="text-2xl font-bold text-gray-900">Carteira Digital</h1>
+                            <p className="text-sm text-gray-500">{user.name}</p>
                         </div>
                     </div>
                     <Button variant="ghost" onClick={handleLogout} size="icon">
-                        <LogOut className="w-5 h-5" />
+                        <LogOut className="w-5 h-5 text-gray-600" />
                     </Button>
                 </div>
 
-                <Card className="mb-8 shadow-medium">
+                {/* Card de saldo */}
+                <Card className="mb-8 border-none shadow-md rounded-2xl bg-white">
                     <CardHeader>
                         <div className="flex justify-between items-start">
                             <div>
-                                <CardDescription>Saldo Disponível</CardDescription>
-                                <CardTitle className="text-4xl font-bold mt-2">
-                                    R$ {user?.balance?.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? "0,00"}
+                                <CardDescription className="text-gray-600 font-medium">
+                                    Saldo Disponível
+                                </CardDescription>
+                                <CardTitle className="text-4xl font-bold text-gray-900 mt-2">
+                                    R${" "}
+                                    {user.balance.toLocaleString("pt-BR", {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                    })}
                                 </CardTitle>
                             </div>
-                            <Button variant="ghost" size="icon" onClick={handleRefresh}>
-                                <RefreshCcw className="w-4 h-4" />
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-gray-600 hover:text-gray-800"
+                                onClick={handleRefresh}
+                            >
+                                <RefreshCcw className="w-5 h-5" />
                             </Button>
                         </div>
                     </CardHeader>
+
                     <CardContent>
-                        <div className="grid grid-cols-2 gap-4">
-                            <Button onClick={() => setDepositOpen(true)} className="gradient-primary border-0">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                            <Button
+                                onClick={() => setDepositOpen(true)}
+                                className="w-full text-white font-medium rounded-xl border-0 py-5 text-base"
+                                style={{
+                                    background: "linear-gradient(135deg, #12B886 0%, #0CA678 100%)",
+                                }}
+                            >
                                 <ArrowDownToLine className="w-4 h-4 mr-2" />
                                 Depositar
                             </Button>
-                            <Button onClick={() => setTransferOpen(true)} variant="secondary">
+                            <Button
+                                onClick={() => setTransferOpen(true)}
+                                className="w-full text-white font-medium rounded-xl border-0 py-5 text-base"
+                                style={{
+                                    background: "linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)",
+                                }}
+                            >
                                 <ArrowUpRight className="w-4 h-4 mr-2" />
                                 Transferir
                             </Button>
@@ -118,16 +158,19 @@ export default function Dashboard() {
                     </CardContent>
                 </Card>
 
-                <TransactionHistory userId={user!.id} onRefresh={handleRefresh} />
+                {/* Histórico de Transações */}
+                <div className="mt-8">
+                    <TransactionHistory userId={user.id} onRefresh={handleRefresh} />
+                </div>
 
+                {/* Modais */}
                 <DepositDialog
                     open={depositOpen}
                     onOpenChange={setDepositOpen}
-                    userId={user!.id}
+                    userId={user.id}
                     currentBalance={user.balance}
                     onSuccess={handleRefresh}
                 />
-
                 <TransferDialog
                     open={transferOpen}
                     onOpenChange={setTransferOpen}
@@ -139,6 +182,4 @@ export default function Dashboard() {
             </div>
         </div>
     );
-};
-
-
+}
