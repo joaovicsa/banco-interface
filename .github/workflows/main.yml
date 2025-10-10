@@ -32,6 +32,10 @@ jobs:
         working-directory: ./frontend
         run: npx vitest run tests/api/
 
+      - name: Install Playwright browsers
+        working-directory: ./frontend
+        run: npx playwright install
+
       - name: Run Playwright Tests
         working-directory: ./frontend
         run: npx playwright test
