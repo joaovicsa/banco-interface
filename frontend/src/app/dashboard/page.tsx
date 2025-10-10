@@ -167,7 +167,7 @@ export default function Dashboard(): JSX.Element {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="text-gray-600 hover:text-gray-800"
+                                className="text-gray-600 hover:text-gray-800 pr-6"
                                 onClick={handleRefresh}
                             >
                                 Atualizar
