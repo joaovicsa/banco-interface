@@ -1,13 +1,12 @@
 import { test, expect } from '@playwright/test';
 
-test.beforeEach(async ({ page }) => {
-    // Realiza login antes de cada teste
+test.beforeEach('setup auth storage', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('tab', { name: 'Login' }).click();
     await page.getByPlaceholder('seu@email.com').fill('teste@gmail.com');
     await page.getByPlaceholder('••••••••').fill('123456');
     await page.getByRole('button', { name: 'Entrar' }).click();
-    await expect(page).toHaveURL(/.*dashboard/);
+    await page.waitForURL(/.*dashboard/);
 });
 
 test('titulo de dashboard', async ({ page }) => {
