@@ -12,6 +12,8 @@ jobs:
       mongo:
         image: mongo:6
         ports: ['27017:27017']
+    env:
+        DIRECT_URL: ${{ secrets.DIRECT_URL }}
     steps:
       - uses: actions/checkout@v4
 
