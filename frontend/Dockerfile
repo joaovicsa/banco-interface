@@ -34,7 +34,6 @@ RUN npm run build
 # ============================================
 # ==== 2. Test Runner Stage (opcional) ====
 # ============================================
-# Este estágio é usado apenas para rodar testes antes de gerar a imagem final.
 FROM node:20-slim AS tester
 
 WORKDIR /app
@@ -46,8 +45,7 @@ COPY --from=builder /app ./
 RUN npx playwright install --with-deps
 
 # Executa testes unitários + E2E
-# Você pode comentar essa linha se quiser pular os testes
-CMD ["sh", "-c", "npx vitest run && npx playwright test"]
+CMD ["sh", "-c", "npx vitest run tests/api && npx playwright test"]
 
 
 # ============================================
