@@ -25,10 +25,13 @@ jobs:
         run: npm install
 
       - name: Build Next.js
+        working-directory: ./frontend
         run: npm run build
 
       - name: Run API Tests
+        working-directory: ./frontend
         run: npx vitest run test/api
 
       - name: Run Playwright Tests
+        working-directory: ./frontend
         run: npx playwright test
