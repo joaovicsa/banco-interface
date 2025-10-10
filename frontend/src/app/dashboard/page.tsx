@@ -142,7 +142,8 @@ export default function Dashboard(): JSX.Element {
                             <p className="text-sm text-gray-500">{user.name}</p>
                         </div>
                     </div>
-                    <Button variant="ghost" onClick={handleLogout} size="icon">
+                    <Button name='LogOut' variant="ghost" onClick={handleLogout} size="icon">
+                        Log Out
                         <LogOut className="w-5 h-5 text-gray-600" />
                     </Button>
                 </div>
@@ -169,6 +170,7 @@ export default function Dashboard(): JSX.Element {
                                 className="text-gray-600 hover:text-gray-800"
                                 onClick={handleRefresh}
                             >
+                                Atualizar
                                 <RefreshCcw className="w-5 h-5" />
                             </Button>
                         </div>
